@@ -6,6 +6,7 @@ const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- 2. SELETORES GLOBAIS ---
+const navDashboard = document.getElementById('nav-dashboard');
 const navAbastecimento = document.getElementById('nav-abastecimento');
 const navVeiculos = document.getElementById('nav-veiculos');
 const navHistorico = document.getElementById('nav-historico');
@@ -19,7 +20,9 @@ function showSection(sectionId) {
     document.getElementById(sectionId).classList.add('active');
     document.getElementById(`nav-${sectionId.split('-')[1]}`).classList.add('active');
 
-    if (sectionId === 'section-abastecimento') {
+    if (sectionId === 'section-dashboard') {
+        carregarDadosDashboard();
+    } else if (sectionId === 'section-abastecimento') {
         carregarVeiculosDropdown();
         carregarHistorico();
         atualizarInfoMaquina();
@@ -31,11 +34,107 @@ function showSection(sectionId) {
     }
 }
 
+navDashboard.addEventListener('click', () => showSection('section-dashboard'));
 navAbastecimento.addEventListener('click', () => showSection('section-abastecimento'));
 navVeiculos.addEventListener('click', () => showSection('section-veiculos'));
 navHistorico.addEventListener('click', () => showSection('section-historico'));
 
-// --- 4. LÓGICA DE GERENCIAMENTO DE VEÍCULOS (CRUD) ---
+// --- 4. LÓGICA DO DASHBOARD ---
+let barChartInstance;
+let lineChartInstance;
+
+async function carregarDadosDashboard() {
+    const kpiTotalMesEl = document.getElementById('kpi-total-mes');
+    const kpiTopVeiculoEl = document.getElementById('kpi-top-veiculo');
+    const kpiTopVeiculoLitrosEl = document.getElementById('kpi-top-veiculo-litros');
+    const kpiOpsHojeEl = document.getElementById('kpi-ops-hoje');
+
+    kpiTotalMesEl.textContent = '...'; kpiTopVeiculoEl.textContent = '...';
+    kpiOpsHojeEl.textContent = '...'; kpiTopVeiculoLitrosEl.textContent = '';
+
+    const trintaDiasAtras = new Date();
+    trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
+
+    const { data: dadosMes, error: errorMes } = await supabaseClient.from('abastecimentos')
+        .select('litros_abastecidos, created_at, veiculos(nome)').eq('tipo_operacao', 'saida')
+        .gte('created_at', trintaDiasAtras.toISOString());
+
+    if (errorMes) { console.error("Erro dashboard:", errorMes); return; }
+
+    const totalConsumidoMes = dadosMes.reduce((acc, op) => acc + (op.litros_abastecidos || 0), 0);
+    kpiTotalMesEl.textContent = `${totalConsumidoMes.toFixed(2)} L`;
+
+    const consumoPorVeiculo = dadosMes.reduce((acc, op) => {
+        const nome = op.veiculos?.nome || 'Desconhecido';
+        acc[nome] = (acc[nome] || 0) + (op.litros_abastecidos || 0);
+        return acc;
+    }, {});
+    
+    let topVeiculo = { nome: 'Nenhum', litros: 0 };
+    for (const nome in consumoPorVeiculo) {
+        if (consumoPorVeiculo[nome] > topVeiculo.litros) { topVeiculo = { nome, litros: consumoPorVeiculo[nome] }; }
+    }
+    kpiTopVeiculoEl.textContent = topVeiculo.nome;
+    if (topVeiculo.litros > 0) { kpiTopVeiculoLitrosEl.textContent = `${topVeiculo.litros.toFixed(2)} L consumidos`; }
+    
+    const hoje = new Date().toISOString().slice(0, 10);
+    const { count: opsHoje, error: errorHoje } = await supabaseClient.from('abastecimentos')
+        .select('*', { count: 'exact', head: true }).gte('created_at', hoje);
+    kpiOpsHojeEl.textContent = errorHoje ? 'Erro' : opsHoje;
+
+    renderizarGraficoBarras(consumoPorVeiculo);
+    renderizarGraficoLinhas();
+}
+
+function renderizarGraficoBarras(dados) {
+    const ctx = document.getElementById('barChart')?.getContext('2d');
+    if (!ctx) return;
+    if (barChartInstance) barChartInstance.destroy();
+    barChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(dados),
+            datasets: [{ label: 'Litros Consumidos', data: Object.values(dados), backgroundColor: 'rgba(74, 105, 189, 0.7)' }]
+        },
+        options: { scales: { y: { beginAtZero: true } } }
+    });
+}
+
+async function renderizarGraficoLinhas() {
+    const ctx = document.getElementById('lineChart')?.getContext('2d');
+    if (!ctx) return;
+    const seteDiasAtras = new Date();
+    seteDiasAtras.setDate(seteDiasAtras.getDate() - 7);
+
+    const { data, error } = await supabaseClient.from('abastecimentos').select('created_at, litros_abastecidos')
+        .eq('tipo_operacao', 'saida').gte('created_at', seteDiasAtras.toISOString());
+
+    if (error) { console.error("Erro gráfico linha:", error); return; }
+
+    const consumoPorDia = {};
+    const labels = [];
+    for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const dia = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        labels.push(dia);
+        consumoPorDia[dia] = 0;
+    }
+    data.forEach(op => {
+        const dia = new Date(op.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        if (consumoPorDia.hasOwnProperty(dia)) { consumoPorDia[dia] += op.litros_abastecidos || 0; }
+    });
+
+    if (lineChartInstance) lineChartInstance.destroy();
+    lineChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{ label: 'Consumo Diário (L)', data: Object.values(consumoPorDia), fill: false, borderColor: 'rgb(32, 191, 107)', tension: 0.1 }]
+        },
+    });
+}
+
+// --- 5. LÓGICA DE GERENCIAMENTO DE VEÍCULOS (CRUD) ---
 const modal = document.getElementById('veiculo-modal');
 const modalTitle = document.getElementById('modal-title');
 const veiculoForm = document.getElementById('veiculo-form');
@@ -99,7 +198,7 @@ async function excluirVeiculo(id) {
     } catch (error) { console.error('Erro ao excluir veículo:', error); alert('Falha ao excluir.'); }
 }
 
-// --- 5. LÓGICA DA ABA DE ABASTECIMENTO ---
+// --- 6. LÓGICA DA ABA DE ABASTECIMENTO ---
 async function carregarVeiculosDropdown() {
     const veiculoSelect = document.getElementById('veiculo-select');
     if (!veiculoSelect) return;
@@ -177,7 +276,7 @@ function calcularTotalAbastecido() {
     }
 }
 
-// --- 6. LÓGICA DO HISTÓRICO AVANÇADO ---
+// --- 7. LÓGICA DO HISTÓRICO AVANÇADO ---
 const btnBuscarHistorico = document.getElementById('btn-buscar-historico');
 
 async function popularFiltroVeiculos() {
@@ -234,9 +333,9 @@ async function buscarHistoricoDetalhado() {
 
 if (btnBuscarHistorico) btnBuscarHistorico.addEventListener('click', buscarHistoricoDetalhado);
 
-// --- 7. INICIALIZAÇÃO E LISTENERS GLOBAIS ---
+// --- 8. INICIALIZAÇÃO E LISTENERS GLOBAIS ---
 document.addEventListener('DOMContentLoaded', () => {
-    showSection('section-abastecimento');
+    showSection('section-dashboard');
     
     document.body.addEventListener('change', (event) => {
         if (event.target.id === 'veiculo-select') {

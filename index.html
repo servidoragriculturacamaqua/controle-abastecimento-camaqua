@@ -10,7 +10,8 @@
     <header class="header">
         <h1>Sistema de Controle</h1>
         <nav class="nav">
-            <a id="nav-abastecimento" class="active">Abastecimento</a>
+            <a id="nav-dashboard" class="active">Dashboard</a>
+            <a id="nav-abastecimento">Abastecimento</a>
             <a id="nav-veiculos">Veículos</a>
             <a id="nav-historico">Histórico</a>
         </nav>
@@ -20,21 +21,45 @@
         </div>
     </header>
 
-    <section id="section-abastecimento" class="section active">
+    <section id="section-dashboard" class="section active">
+        <div class="container" style="display:block;">
+            <div class="kpi-container">
+                <div class="card kpi-card">
+                    <p>Total Consumido (Últimos 30 dias)</p>
+                    <h2 id="kpi-total-mes">-- L</h2>
+                </div>
+                <div class="card kpi-card">
+                    <p>Veículo com Maior Consumo (Mês)</p>
+                    <h2 id="kpi-top-veiculo">--</h2>
+                    <span id="kpi-top-veiculo-litros" class="meta-info"></span>
+                </div>
+                <div class="card kpi-card">
+                    <p>Operações Registadas Hoje</p>
+                    <h2 id="kpi-ops-hoje">--</h2>
+                </div>
+            </div>
+            <div class="charts-container">
+                <div class="card chart-wrapper">
+                    <h3>Consumo por Veículo (Últimos 30 dias)</h3>
+                    <canvas id="barChart"></canvas>
+                </div>
+                <div class="card chart-wrapper">
+                    <h3>Consumo Diário (Últimos 7 dias)</h3>
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="section-abastecimento" class="section">
         <div class="container">
-            <main class="main-content">
+            <main class="main-content" id="abastecimento-main">
                 <div class="card">
                     <h2>1. Carregar Saldo na Máquina (Entrada)</h2>
                     <form id="form-entrada">
                         <div class="form-row">
-                            <div class="form-group" style="flex:1;">
-                                <label for="veiculo-select">Máquina</label>
-                                <select id="veiculo-select" required></select>
-                            </div>
-                            <div class="form-group" style="flex:1;">
-                                <label for="litros-adicionar">Litros a Adicionar</label>
-                                <input type="number" id="litros-adicionar" step="0.01" required>
-                            </div>
+                            <div class="form-group" style="flex:1;"><label for="veiculo-select">Máquina</label><select id="veiculo-select" required></select></div>
+                            <div class="form-group" style="flex:1;"><label for="litros-adicionar">Litros a Adicionar</label><input type="number" id="litros-adicionar" step="0.01" required></div>
                         </div>
                         <button type="submit" class="btn">Adicionar Saldo</button>
                     </form>
@@ -43,47 +68,27 @@
                     <h2>2. Registrar Abastecimento no Campo (Saída)</h2>
                     <form id="form-saida">
                         <div class="form-row">
-                            <div class="form-group" style="flex: 2;">
-                                <label>Leitura do Hidrômetro da Bomba</label>
-                                <div class="form-row" style="margin-bottom: 0; display:flex; gap: 1.5rem;">
-                                    <input type="number" id="leitura-inicial" placeholder="Leitura Inicial" step="0.01" required>
-                                    <input type="number" id="leitura-final" placeholder="Leitura Final" step="0.01" required>
-                                </div>
-                            </div>
-                            <div class="form-group" style="flex: 1;">
-                                <label>Total Abastecido</label>
-                                <div class="total-display"><span id="total-abastecido">0 L</span></div>
-                            </div>
+                            <div class="form-group" style="flex: 2;"><label>Leitura do Hidrômetro</label><div class="form-row" style="margin-bottom: 0; display:flex; gap: 1.5rem;"><input type="number" id="leitura-inicial" placeholder="Inicial" step="0.01" required><input type="number" id="leitura-final" placeholder="Final" step="0.01" required></div></div>
+                            <div class="form-group" style="flex: 1;"><label>Total</label><div class="total-display"><span id="total-abastecido">0 L</span></div></div>
                         </div>
                         <div class="form-row" style="display:flex; gap: 1.5rem;">
-                            <div class="form-group" style="flex:1;"><label for="horimetro">Horímetro / Odômetro</label><input type="text" id="horimetro"></div>
+                            <div class="form-group" style="flex:1;"><label for="horimetro">Horímetro/Odômetro</label><input type="text" id="horimetro"></div>
                             <div class="form-group" style="flex:1;"><label for="operador">Operador</label><input type="text" id="operador"></div>
                         </div>
                         <div class="form-group"><label for="observacao">Observação</label><textarea id="observacao"></textarea></div>
                         <button type="submit" id="btn-registrar-saida" class="btn" disabled>Registrar Abastecimento</button>
                     </form>
                 </div>
-                <div class="card">
-                    <h2>Histórico de Operações Recentes</h2>
-                    <div id="historico-container"></div>
-                </div>
+                <div class="card"><h2>Histórico Recente</h2><div id="historico-container"></div></div>
             </main>
-            <aside class="sidebar">
-                <div class="card" id="info-maquina">
-                    <h2>Informações da Máquina</h2>
-                    <p>Selecione uma máquina para iniciar a operação.</p>
-                </div>
-            </aside>
+            <aside class="sidebar"><div class="card" id="info-maquina"></div></aside>
         </div>
     </section>
 
     <section id="section-veiculos" class="section">
         <div class="container" style="display:block;">
             <div class="card">
-                <div style="display:flex; justify-content: space-between; align-items: center;">
-                    <h2>Gerenciamento da Frota</h2>
-                    <button id="btn-novo-veiculo" class="btn btn-sm">Adicionar Novo Veículo</button>
-                </div>
+                <div style="display:flex; justify-content: space-between; align-items: center;"><h2>Gerenciamento da Frota</h2><button id="btn-novo-veiculo" class="btn btn-sm">Adicionar Novo Veículo</button></div>
                 <table class="table">
                     <thead><tr><th>Nome</th><th>Tipo</th><th>Ações</th></tr></thead>
                     <tbody id="lista-veiculos"></tbody>
@@ -95,7 +100,7 @@
     <section id="section-historico" class="section">
         <div class="container" style="display:block;">
             <div class="card">
-                <h2>Histórico Detalhado de Operações</h2>
+                <h2>Histórico Detalhado</h2>
                 <div class="filtros-container">
                     <div class="form-group"><label for="filtro-veiculo">Filtrar por Veículo</label><select id="filtro-veiculo"></select></div>
                     <div class="form-group"><label for="filtro-data-inicio">Data de Início</label><input type="date" id="filtro-data-inicio"></div>
@@ -104,9 +109,7 @@
                 </div>
                 <div class="table-container">
                     <table class="table">
-                        <thead>
-                            <tr><th>Data</th><th>Veículo</th><th>Operação</th><th>Litros</th><th>Operador</th><th>Horímetro/Odômetro</th></tr>
-                        </thead>
+                        <thead><tr><th>Data</th><th>Veículo</th><th>Operação</th><th>Litros</th><th>Operador</th><th>Horímetro/Odômetro</th></tr></thead>
                         <tbody id="historico-detalhado-body"></tbody>
                     </table>
                 </div>
@@ -127,6 +130,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
