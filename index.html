@@ -7,126 +7,132 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <h1>Sistema de Controle</h1>
-        <nav class="nav">
-            <a id="nav-dashboard" class="active">Dashboard</a>
-            <a id="nav-abastecimento">Abastecimento</a>
-            <a id="nav-veiculos">Veículos</a>
-            <a id="nav-historico">Histórico</a>
-        </nav>
-        <div class="user-info">
-            <span>zezoblaskowskitavares@gmail.com</span>
-            <button class="btn btn-sm btn-danger">Sair</button>
-        </div>
-    </header>
-
-    <section id="section-dashboard" class="section active">
-        <div class="container" style="display:block;">
-            <div class="kpi-container">
-                <div class="card kpi-card">
-                    <p>Total Consumido (Últimos 30 dias)</p>
-                    <h2 id="kpi-total-mes">-- L</h2>
+    <div id="login-container" class="section active">
+        <div class="login-card">
+            <h2>Sistema de Controle de Abastecimento</h2>
+            <p>Por favor, faça login para continuar.</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" required>
                 </div>
-                <div class="card kpi-card">
-                    <p>Veículo com Maior Consumo (Mês)</p>
-                    <h2 id="kpi-top-veiculo">--</h2>
-                    <span id="kpi-top-veiculo-litros" class="meta-info"></span>
+                <div class="form-group">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" required>
                 </div>
-                <div class="card kpi-card">
-                    <p>Operações Registadas Hoje</p>
-                    <h2 id="kpi-ops-hoje">--</h2>
-                </div>
-            </div>
-            <div class="charts-container">
-                <div class="card chart-wrapper">
-                    <h3>Consumo por Veículo (Últimos 30 dias)</h3>
-                    <canvas id="barChart"></canvas>
-                </div>
-                <div class="card chart-wrapper">
-                    <h3>Consumo Diário (Últimos 7 dias)</h3>
-                    <canvas id="lineChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="section-abastecimento" class="section">
-        <div class="container">
-            <main class="main-content" id="abastecimento-main">
-                <div class="card">
-                    <h2>1. Carregar Saldo na Máquina (Entrada)</h2>
-                    <form id="form-entrada">
-                        <div class="form-row">
-                            <div class="form-group" style="flex:1;"><label for="veiculo-select">Máquina</label><select id="veiculo-select" required></select></div>
-                            <div class="form-group" style="flex:1;"><label for="litros-adicionar">Litros a Adicionar</label><input type="number" id="litros-adicionar" step="0.01" required></div>
-                        </div>
-                        <button type="submit" class="btn">Adicionar Saldo</button>
-                    </form>
-                </div>
-                <div class="card">
-                    <h2>2. Registrar Abastecimento no Campo (Saída)</h2>
-                    <form id="form-saida">
-                        <div class="form-row">
-                            <div class="form-group" style="flex: 2;"><label>Leitura do Hidrômetro</label><div class="form-row" style="margin-bottom: 0; display:flex; gap: 1.5rem;"><input type="number" id="leitura-inicial" placeholder="Inicial" step="0.01" required><input type="number" id="leitura-final" placeholder="Final" step="0.01" required></div></div>
-                            <div class="form-group" style="flex: 1;"><label>Total</label><div class="total-display"><span id="total-abastecido">0 L</span></div></div>
-                        </div>
-                        <div class="form-row" style="display:flex; gap: 1.5rem;">
-                            <div class="form-group" style="flex:1;"><label for="horimetro">Horímetro/Odômetro</label><input type="text" id="horimetro"></div>
-                            <div class="form-group" style="flex:1;"><label for="operador">Operador</label><input type="text" id="operador"></div>
-                        </div>
-                        <div class="form-group"><label for="observacao">Observação</label><textarea id="observacao"></textarea></div>
-                        <button type="submit" id="btn-registrar-saida" class="btn" disabled>Registrar Abastecimento</button>
-                    </form>
-                </div>
-                <div class="card"><h2>Histórico Recente</h2><div id="historico-container"></div></div>
-            </main>
-            <aside class="sidebar"><div class="card" id="info-maquina"></div></aside>
-        </div>
-    </section>
-
-    <section id="section-veiculos" class="section">
-        <div class="container" style="display:block;">
-            <div class="card">
-                <div style="display:flex; justify-content: space-between; align-items: center;"><h2>Gerenciamento da Frota</h2><button id="btn-novo-veiculo" class="btn btn-sm">Adicionar Novo Veículo</button></div>
-                <table class="table">
-                    <thead><tr><th>Nome</th><th>Tipo</th><th>Ações</th></tr></thead>
-                    <tbody id="lista-veiculos"></tbody>
-                </table>
-            </div>
-        </div>
-    </section>
-
-    <section id="section-historico" class="section">
-        <div class="container" style="display:block;">
-            <div class="card">
-                <h2>Histórico Detalhado</h2>
-                <div class="filtros-container">
-                    <div class="form-group"><label for="filtro-veiculo">Filtrar por Veículo</label><select id="filtro-veiculo"></select></div>
-                    <div class="form-group"><label for="filtro-data-inicio">Data de Início</label><input type="date" id="filtro-data-inicio"></div>
-                    <div class="form-group"><label for="filtro-data-fim">Data de Fim</label><input type="date" id="filtro-data-fim"></div>
-                    <button id="btn-buscar-historico" class="btn btn-sm">Buscar</button>
-                </div>
-                <div class="table-container">
-                    <table class="table">
-                        <thead><tr><th>Data</th><th>Veículo</th><th>Operação</th><th>Litros</th><th>Operador</th><th>Horímetro/Odômetro</th></tr></thead>
-                        <tbody id="historico-detalhado-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <div id="veiculo-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2 id="modal-title">Adicionar Veículo</h2>
-            <form id="veiculo-form">
-                <input type="hidden" id="veiculo-id">
-                <div class="form-group"><label for="veiculo-nome">Nome</label><input type="text" id="veiculo-nome" required></div>
-                <div class="form-group"><label for="veiculo-tipo">Tipo</label><input type="text" id="veiculo-tipo"></div>
-                <button type="submit" class="btn">Salvar</button>
+                <button type="submit" class="btn">Entrar</button>
+                <p id="login-error" class="error-message"></p>
             </form>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none;">
+        <header class="header">
+            <h1>Sistema de Controle</h1>
+            <nav class="nav">
+                <a id="nav-dashboard">Dashboard</a>
+                <a id="nav-abastecimento">Abastecimento</a>
+                <a id="nav-veiculos">Veículos</a>
+                <a id="nav-historico">Histórico</a>
+            </nav>
+            <div class="user-info">
+                <span id="user-email-display"></span>
+                <button id="btn-logout" class="btn btn-sm btn-danger">Sair</button>
+            </div>
+        </header>
+
+        <section id="section-dashboard" class="section">
+            <div class="container" style="display:block;">
+                <div class="kpi-container">
+                    <div class="card kpi-card"><p>Total Consumido (Últimos 30 dias)</p><h2 id="kpi-total-mes">-- L</h2></div>
+                    <div class="card kpi-card"><p>Veículo com Maior Consumo (Mês)</p><h2 id="kpi-top-veiculo">--</h2><span id="kpi-top-veiculo-litros" class="meta-info"></span></div>
+                    <div class="card kpi-card"><p>Operações Registadas Hoje</p><h2 id="kpi-ops-hoje">--</h2></div>
+                </div>
+                <div class="charts-container">
+                    <div class="card chart-wrapper"><h3>Consumo por Veículo (Últimos 30 dias)</h3><canvas id="barChart"></canvas></div>
+                    <div class="card chart-wrapper"><h3>Consumo Diário (Últimos 7 dias)</h3><canvas id="lineChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-abastecimento" class="section">
+            <div class="container">
+                <main class="main-content">
+                    <div class="card">
+                        <h2>1. Carregar Saldo (Entrada)</h2>
+                        <form id="form-entrada">
+                            <div class="form-row"><div class="form-group" style="flex:1;"><label for="veiculo-select">Máquina</label><select id="veiculo-select" required></select></div><div class="form-group" style="flex:1;"><label for="litros-adicionar">Litros</label><input type="number" id="litros-adicionar" step="0.01" required></div></div>
+                            <button type="submit" class="btn">Adicionar Saldo</button>
+                        </form>
+                    </div>
+                    <div class="card">
+                        <h2>2. Registrar Abastecimento (Saída)</h2>
+                        <form id="form-saida">
+                            <div class="form-row"><div class="form-group" style="flex: 2;"><label>Leitura do Hidrômetro</label><div class="form-row" style="margin-bottom: 0; display:flex; gap: 1.5rem;"><input type="number" id="leitura-inicial" placeholder="Inicial" step="0.01" required><input type="number" id="leitura-final" placeholder="Final" step="0.01" required></div></div><div class="form-group" style="flex: 1;"><label>Total</label><div class="total-display"><span id="total-abastecido">0 L</span></div></div></div>
+                            <div class="form-row" style="display:flex; gap: 1.5rem;"><div class="form-group" style="flex:1;"><label for="horimetro">Horímetro/Odômetro</label><input type="text" id="horimetro"></div><div class="form-group" style="flex:1;"><label for="operador">Operador</label><input type="text" id="operador"></div></div>
+                            <div class="form-group"><label for="observacao">Observação</label><textarea id="observacao"></textarea></div>
+                            <button type="submit" id="btn-registrar-saida" class="btn" disabled>Registrar</button>
+                        </form>
+                    </div>
+                    <div class="card"><h2>Histórico Recente</h2><div id="historico-container"></div></div>
+                </main>
+                <aside class="sidebar"><div class="card" id="info-maquina"></div></aside>
+            </div>
+        </section>
+
+        <section id="section-veiculos" class="section">
+            <div class="container" style="display:block;">
+                <div class="card">
+                    <div style="display:flex; justify-content: space-between; align-items: center;"><h2>Gerenciamento da Frota</h2><button id="btn-novo-veiculo" class="btn btn-sm">Adicionar Novo Veículo</button></div>
+                    <table class="table"><thead><tr><th>Nome</th><th>Tipo</th><th>Ações</th></tr></thead><tbody id="lista-veiculos"></tbody></table>
+                </div>
+            </div>
+        </section>
+
+        <section id="section-historico" class="section">
+            <div class="container" style="display:block;">
+                <div class="card">
+                    <h2>Histórico Detalhado</h2>
+                    <div class="filtros-container">
+                        <div class="form-group"><label for="filtro-veiculo">Veículo</label><select id="filtro-veiculo"></select></div>
+                        <div class="form-group"><label for="filtro-data-inicio">De</label><input type="date" id="filtro-data-inicio"></div>
+                        <div class="form-group"><label for="filtro-data-fim">Até</label><input type="date" id="filtro-data-fim"></div>
+                        <button id="btn-buscar-historico" class="btn btn-sm">Buscar</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead><tr><th>Data</th><th>Veículo</th><th>Operação</th><th>Litros</th><th>Operador</th><th>Horímetro/Odômetro</th><th>Ações</th></tr></thead>
+                            <tbody id="historico-detalhado-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div id="veiculo-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-veiculo-modal">&times;</span><h2 id="modal-title-veiculo"></h2>
+                <form id="veiculo-form">
+                    <input type="hidden" id="veiculo-id">
+                    <div class="form-group"><label for="veiculo-nome">Nome</label><input type="text" id="veiculo-nome" required></div>
+                    <div class="form-group"><label for="veiculo-tipo">Tipo</label><input type="text" id="veiculo-tipo"></div>
+                    <button type="submit" class="btn">Salvar</button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="abastecimento-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-button" id="close-abastecimento-modal">&times;</span><h2 id="modal-title-abastecimento">Editar Registo</h2>
+                <form id="abastecimento-form">
+                    <input type="hidden" id="abastecimento-id">
+                    <div class="form-group"><label for="abastecimento-veiculo">Veículo</label><input type="text" id="abastecimento-veiculo" disabled></div>
+                    <div class="form-row"><div class="form-group" style="flex:1;"><label for="abastecimento-litros">Litros</label><input type="number" step="0.01" id="abastecimento-litros"></div><div class="form-group" style="flex:1;"><label for="abastecimento-operador">Operador</label><input type="text" id="abastecimento-operador"></div></div>
+                    <div class="form-group"><label for="abastecimento-horimetro">Horímetro/Odômetro</label><input type="text" id="abastecimento-horimetro"></div>
+                    <div class="form-group"><label for="abastecimento-observacao">Observação</label><textarea id="abastecimento-observacao"></textarea></div>
+                    <button type="submit" class="btn">Salvar Alterações</button>
+                </form>
+            </div>
         </div>
     </div>
 
