@@ -2,6 +2,7 @@
     --bg-color: #f0f2f5; --card-bg: #ffffff; --primary-color: #4a69bd;
     --text-color: #333; --border-color: #e0e0e0; --gray-text: #6c757d;
     --blue-light: #eff2f7; --green-total: #20bf6b; --danger-color: #eb4d4b;
+    --export-color: #17a2b8;
 }
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); }
@@ -34,6 +35,8 @@ body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 .btn-sm { padding: 0.5rem 1rem; font-size: 0.9rem; width: auto; }
 .btn-danger { background-color: var(--danger-color); }
 .btn-danger:hover { background-color: #c82333; }
+.btn-export { background-color: var(--export-color); }
+.btn-export:hover { background-color: #138496; }
 .section { display: none; }
 .section.active { display: block; }
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); justify-content: center; align-items: center; }
